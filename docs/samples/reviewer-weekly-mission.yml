@@ -1,0 +1,74 @@
+# Sample: GitHub Actions → reviewer (weekly mission / guild nudge)
+#
+# Copy to .github/workflows/reviewer-weekly-mission.yml in YOUR training or app repo.
+#
+# Reviewer today: session is primarily httpOnly cookies after POST /auth/login.
+# For GET /training/squad-pulse, a cookie jar after login is enough (no CSRF on safe methods).
+# Prefer a dedicated low-privilege "bot" user; rotate REVIEWER_BOT_PASSWORD like any secret.
+#
+# Secrets to configure:
+#   REVIEWER_BASE_URL    e.g. https://reviewer.example.com/api/v1  (no trailing slash ok)
+#   REVIEWER_BOT_EMAIL
+#   REVIEWER_BOT_PASSWORD
+#
+# Future (cleaner): machine API key or GitHub OIDC → short-lived JWT (see docs/PRODUCT_ROADMAP.md).
+
+name: Reviewer weekly mission
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 9 * * 1" # 09:00 UTC Mondays
+
+jobs:
+  post-mission:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Login and fetch squad pulse
+        id: pulse
+        env:
+          BASE: ${{ secrets.REVIEWER_BASE_URL }}
+          EMAIL: ${{ secrets.REVIEWER_BOT_EMAIL }}
+          PASS: ${{ secrets.REVIEWER_BOT_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${BASE:-}" ] || [ -z "${EMAIL:-}" ] || [ -z "${PASS:-}" ]; then
+            echo "Configured secrets missing — set REVIEWER_BASE_URL, REVIEWER_BOT_EMAIL, REVIEWER_BOT_PASSWORD."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          BASE="${BASE%/}"
+          curl -sS -c reviewer.cookies -H "Content-Type: application/json" \
+            -d "$(jq -n --arg e "$EMAIL" --arg p "$PASS" '{email:$e,password:$p}')" \
+            "$BASE/auth/login" > /dev/null
+          curl -sS -b reviewer.cookies -f "$BASE/training/squad-pulse" -o pulse.json
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Open tracking issue (example)
+        if: steps.pulse.outputs.skip == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const p = JSON.parse(fs.readFileSync('pulse.json','utf8'));
+            const body = [
+              '## Reviewer mission (automated)',
+              '',
+              '**' + p.mission_title + '**',
+              '',
+              p.mission_detail,
+              '',
+              '- Focus tracks: ' + p.focus_tracks.join(', '),
+              '- Try challenge IDs: `' + p.suggested_challenge_ids.join('`, `') + '`',
+              '',
+              '_Informational — wire branch protection separately when you add check runs._'
+            ].join('\n');
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '[Reviewer] Weekly mission: ' + p.mission_title.slice(0, 60),
+              body
+            });
