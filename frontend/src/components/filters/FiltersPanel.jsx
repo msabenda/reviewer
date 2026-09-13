@@ -1,5 +1,11 @@
 import { TRACK_LABEL } from "../../constants/ui";
 
+const DIFFICULTY_EMOJI = {
+  Beginner: "🌱",
+  Intermediate: "🔥",
+  Advanced: "💀",
+};
+
 function FiltersPanel({
   filters,
   filtersOptions,
@@ -11,81 +17,61 @@ function FiltersPanel({
 }) {
   return (
     <section className="filters-panel">
-      <div className="search-wrap">
-        <label className="field-label">
-          Search
+      <div className="fp-header">
+        <h3 className="fp-title">🧭 Challenge library</h3>
+        <p className="fp-count">{loadingChallenges ? "..." : `${challengeCount} challenges`}</p>
+      </div>
+
+      <div className="fp-body">
+        <label className="field-label fp-search">
           <input
             className="search-input"
             type="search"
             value={filters.search}
             onChange={(event) => onFilterChange("search", event.target.value)}
-            placeholder="Search by language, framework, or vulnerability"
+            placeholder="Search by language, framework, or vulnerability type…"
           />
         </label>
-      </div>
 
-      <label className="field-label">
-        Track
-        <select value={filters.track} onChange={(event) => onFilterChange("track", event.target.value)}>
-          <option value="">All Tracks</option>
-          {filtersOptions.tracks.map((track) => (
-            <option key={track} value={track}>
-              {TRACK_LABEL[track] || track.toUpperCase()}
-            </option>
-          ))}
-        </select>
-      </label>
+        <div className="fp-filters">
+          <select value={filters.track} onChange={(e) => onFilterChange("track", e.target.value)}>
+            <option value="">All tracks</option>
+            {filtersOptions.tracks.map((track) => (
+              <option key={track} value={track}>
+                {TRACK_LABEL[track] || track.toUpperCase()}
+              </option>
+            ))}
+          </select>
 
-      <label className="field-label">
-        Language
-        <select
-          value={filters.language}
-          onChange={(event) => onFilterChange("language", event.target.value)}
-        >
-          <option value="">All Languages</option>
-          {filtersOptions.languages.map((language) => (
-            <option key={language} value={language}>
-              {language}
-            </option>
-          ))}
-        </select>
-      </label>
+          <select value={filters.language} onChange={(e) => onFilterChange("language", e.target.value)}>
+            <option value="">All languages</option>
+            {filtersOptions.languages.map((lang) => (
+              <option key={lang} value={lang}>{lang}</option>
+            ))}
+          </select>
 
-      <label className="field-label">
-        Difficulty
-        <select
-          value={filters.difficulty}
-          onChange={(event) => onFilterChange("difficulty", event.target.value)}
-        >
-          <option value="">All Levels</option>
-          {filtersOptions.difficulties.map((difficulty) => (
-            <option key={difficulty} value={difficulty}>
-              {difficulty}
-            </option>
-          ))}
-        </select>
-      </label>
+          <select value={filters.difficulty} onChange={(e) => onFilterChange("difficulty", e.target.value)}>
+            <option value="">All difficulties</option>
+            {filtersOptions.difficulties.map((diff) => (
+              <option key={diff} value={diff}>
+                {DIFFICULTY_EMOJI[diff] || ""} {diff}
+              </option>
+            ))}
+          </select>
 
-      <label className="field-label">
-        Category
-        <select
-          value={filters.category}
-          onChange={(event) => onFilterChange("category", event.target.value)}
-        >
-          <option value="">All Categories</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.title}
-            </option>
-          ))}
-        </select>
-      </label>
+          <select value={filters.category} onChange={(e) => onFilterChange("category", e.target.value)}>
+            <option value="">All categories</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.title}</option>
+            ))}
+          </select>
+        </div>
 
-      <div className="filters-actions">
-        <button type="button" className="button-ghost" onClick={onReset}>
-          Reset Filters
-        </button>
-        <p>{loadingChallenges ? "Refreshing challenge list..." : `${challengeCount} matches`}</p>
+        <div className="fp-actions">
+          <button type="button" className="button-ghost fp-reset" onClick={onReset}>
+            Reset filters
+          </button>
+        </div>
       </div>
     </section>
   );

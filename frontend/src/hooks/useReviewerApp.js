@@ -286,6 +286,11 @@ export function useReviewerApp({ mode = "demo", csrfToken = "", enabled = true }
 
     try {
       const result = await apiClient.submitChallenge(activeChallengeId, selectedLines);
+      // Enrich submission with the challenge code so the pass celebration can render the diff
+      if (activeChallenge?.code) {
+        result._challenge_code = activeChallenge.code;
+        result._vulnerable_lines = activeChallenge.vulnerable_lines;
+      }
       setSubmission(result);
       setAttemptStats(result.attempts);
     } catch (submitError) {

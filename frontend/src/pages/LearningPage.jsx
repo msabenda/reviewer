@@ -5,23 +5,23 @@ import SquadPanel from "../components/learning/SquadPanel";
 import TrainingWorkspace from "../components/workspace/TrainingWorkspace";
 
 const LEARN_TABS = [
-  { id: "challenges", label: "Challenges", glyph: "◇" },
-  { id: "playbooks", label: "Playbooks", glyph: "≡" },
+  { id: "challenges", label: "Find & Fix", glyph: "🛡" },
+  { id: "playbooks", label: "Playbooks", glyph: "📘" },
   { id: "squad", label: "Team pulse", glyph: "◎" },
 ];
 
 const LEARN_SPARKS = [
   {
-    title: "SDLC order",
-    body: "Challenges follow the same gate sequence many teams use before prod.",
+    title: "Real incidents",
+    body: "Every challenge starts with a real-world breach narrative — not synthetic sanitized examples.",
   },
   {
-    title: "Mark lines",
-    body: "Click only exploitable lines — precision beats guessing in review.",
+    title: "Mark the exact lines",
+    body: "Click only the code lines that introduced the vulnerability. Precision matters more than volume.",
   },
   {
-    title: "Submit to score",
-    body: "Instant feedback, remediation, and progress sync to your profile.",
+    title: "Instant remediation",
+    body: "Submit and get the fix pattern, root cause, and references to real CVEs and bug bounty writeups.",
   },
 ];
 
@@ -35,10 +35,10 @@ function LearningPage({ csrfToken, user }) {
         <div className="learn-console-top-inner">
           <div className="learn-console-brand">
             <p className="learn-console-kicker">Reviewer · Training</p>
-            <h1 className="learn-console-title">Hello, {firstName}</h1>
+            <h1 className="learn-console-title">Hey {firstName}</h1>
             <p className="learn-console-sub">
-              Your workspace is tuned for depth: SDLC-ordered challenges, crisp filters, and a review surface that
-              feels like the real PR queue.
+              52 real-world vulnerabilities from bug bounties, CVEs, and actual breaches.
+              Read the incident, find the line, lock in the fix.
             </p>
           </div>
 
@@ -64,9 +64,7 @@ function LearningPage({ csrfToken, user }) {
                 aria-selected={tab === item.id}
                 onClick={() => setTab(item.id)}
               >
-                <span className="learn-tab-glyph" aria-hidden="true">
-                  {item.glyph}
-                </span>
+                <span className="learn-tab-glyph" aria-hidden="true">{item.glyph}</span>
                 <span className="learn-tab-label">{item.label}</span>
               </button>
             ))}
@@ -81,8 +79,8 @@ function LearningPage({ csrfToken, user }) {
               mode="training"
               csrfToken={csrfToken}
               heroVariant="minimal"
-              title="Challenge workspace"
-              subtitle="Pick a challenge, scan the brief and file tree, then flag only the lines you would block in review. Context panels stay collapsed until you need them."
+              title="Vulnerability Lab"
+              subtitle="52 real breaches, 9 categories. Pick a challenge, read how it went down in production, then spot the exact line that caused it."
             />
           </div>
         ) : null}

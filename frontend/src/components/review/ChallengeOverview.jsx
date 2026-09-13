@@ -1,6 +1,5 @@
 import { sdlcPhaseLabel } from "../../constants/sdlc";
 import { TRACK_LABEL } from "../../constants/ui";
-
 import SdlcPipelineStrip from "./SdlcPipelineStrip";
 
 function ChallengeOverview({ challenge }) {
@@ -30,18 +29,20 @@ function ChallengeOverview({ challenge }) {
       <div className="overview-header-block">
         <h2 className="overview-title">{challenge.title}</h2>
         <p className="overview-meta-line">{metaLine}</p>
-        <p className="overview-summary">{challenge.description}</p>
+
+        {challenge.scenario ? (
+          <div className="ov-scenario-block">
+            <span className="ov-scenario-tag">The incident</span>
+            <p className="ov-scenario-text">{challenge.scenario}</p>
+          </div>
+        ) : (
+          <p className="overview-summary">{challenge.description}</p>
+        )}
       </div>
 
       <details className="overview-disclosure">
-        <summary>Review brief &amp; extra context</summary>
+        <summary>Review brief &amp; context</summary>
         <div className="overview-disclosure-body">
-          {challenge.scenario ? (
-            <div className="overview-brief">
-              <h3 className="overview-disclosure-heading">Scenario</h3>
-              <p>{challenge.scenario}</p>
-            </div>
-          ) : null}
           {pattern ? (
             <p className="overview-pattern">
               <strong>Pattern focus:</strong> {String(pattern).replace(/_/g, " ")}
@@ -59,6 +60,15 @@ function ChallengeOverview({ challenge }) {
           ) : null}
         </div>
       </details>
+
+      <div className="ov-challenge-card">
+        <div className="ov-card-section">
+          <span className="ov-card-label">⬇ Your mission</span>
+          <p className="ov-card-text">
+            {challenge.description}
+          </p>
+        </div>
+      </div>
     </article>
   );
 }
