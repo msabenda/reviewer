@@ -1,171 +1,190 @@
-# reviewer - Secure Code Review Training App
+<div align="center">
+  <img src="frontend/src/assets/logo.png" alt="Reviewer logo" width="180" />
 
-Full-stack training platform for developers to practice secure code review across OWASP Web, API, AI, and MCP risk areas.
+# Reviewer
 
-## Stack
-- Frontend: React + Vite
-- Backend: FastAPI + SQLAlchemy + JWT auth
+**An open-source secure code review training platform for web, API, AI, and MCP security.**
 
-## Core Flow
-1. Landing page (`/`)
-2. Demo challenges (`/demo`) without account
-3. Register (`/register`)
-4. Login (`/login`)
-5. Full learning workspace (`/learn`) with authenticated progress
-6. Progress dashboard (`/progress`) and team leaderboard (`/leaderboard`)
-7. Admin challenge upload (`/admin`) for admin users
+Practice identifying vulnerable lines, explaining impact, and choosing safer remediations in realistic code-review challenges.
 
-## Supported Training Stacks
-- PHP
-- Laravel
-- Django
-- Flask
-- FastAPI
-- Next.js
-- React
-- NodeJS
-- Go
-- Java
-- Spring Boot
-- AI
-- MCP
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![FastAPI](https://img.shields.io/badge/API-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/UI-React-61DAFB.svg)](https://react.dev/)
+[![OWASP](https://img.shields.io/badge/training-OWASP-orange.svg)](https://owasp.org/)
 
-## Backend Architecture (API Gateway Style)
-Versioned entrypoint:
-- `/api/v1/*`
+</div>
 
-Gateway routing:
-- `/api/v1/health`
-- `/api/v1/auth/*`
-- `/api/v1/demo/*`
-- `/api/v1/training/*`
-- `/api/v1/admin/*`
+> [!IMPORTANT]
+> Reviewer intentionally contains **vulnerable code samples for education**. The snippets are simulated examples and must not be copied into production systems.
 
-Security features:
-- JWT session cookies for frontend auth
-- CSRF protection for authenticated write actions
-- Password hashing with PBKDF2-SHA256 (`passlib`)
-- SQLAlchemy persistence (`users`, `challenge_attempts`)
-- Security headers middleware
-- Request context logging middleware
-- CORS configured via settings
+## Why Reviewer?
 
-## Project Structure
-### Backend
-- `backend/app/main.py`: app factory wiring, middleware, router mount
-- `backend/app/api/v1/router.py`: API gateway router
-- `backend/app/api/v1/endpoints/`: `health.py`, `auth.py`, `demo.py`, `training.py`
-- `backend/app/core/`: config, db session, auth deps, JWT/password utilities
-- `backend/app/models/`: SQLAlchemy models
-- `backend/app/services/`: challenge scoring/filtering and auth service
-- `backend/app/schemas/`: pydantic request/response models
-- `backend/app/data.py`: challenge dataset
+Security guidance becomes useful when developers can apply it during code review. Reviewer provides a hands-on workspace where learners can:
 
-### Frontend
-- `frontend/src/App.jsx`: app shell + path-based routing
-- `frontend/src/context/AuthContext.jsx`: auth state and token persistence
-- `frontend/src/pages/`: landing, demo, auth, learning pages
-- `frontend/src/pages/`: landing, demo, auth, learning, progress, leaderboard, admin
-- `frontend/src/components/workspace/TrainingWorkspace.jsx`: shared challenge workspace
-- `frontend/src/hooks/useReviewerApp.js`: challenge data orchestration for demo/training scopes
-- `frontend/src/services/reviewerApi.js`: API client for auth/demo/training endpoints
-- `frontend/src/styles/app.css`: modern white/blue/black light/dark theme
+- inspect realistic vulnerable snippets across multiple languages and frameworks;
+- select the lines responsible for a vulnerability;
+- receive immediate remediation guidance and OWASP mappings;
+- explore API Security Top 10 and LLM/AI security scenarios;
+- track progress, scores, and team learning activity;
+- use a demo mode without creating an account.
 
-## Run Backend
+## Screenshots
+
+### Challenge catalogue
+
+![Reviewer challenge catalogue](docs/screenshots/challenge-catalog.png)
+
+### Secure review workspace
+
+![Reviewer dark review workspace](docs/screenshots/review-workspace-dark.png)
+
+### Feedback and completion
+
+![Reviewer challenge completion feedback](docs/screenshots/challenge-complete.png)
+
+More screenshots are available in [`docs/screenshots`](docs/screenshots).
+
+## Training Coverage
+
+- **Web security:** injection, XSS, path traversal, command execution, and unsafe deserialization
+- **API security:** BOLA/BFLA, broken authentication, SSRF, mass assignment, and resource abuse
+- **AI security:** prompt injection, model denial of service, insecure output handling, and data poisoning
+- **Agent and MCP security:** excessive agency, unsafe tool routing, and filesystem access
+- **Languages and frameworks:** Python, PHP, JavaScript, TypeScript, Java, Go, React, Django, Flask, FastAPI, Laravel, Spring Boot, and Next.js
+
+## Architecture
+
+```text
+Browser (React + Vite)
+          |
+          v
+/api/v1 gateway (FastAPI)
+  |-- /health
+  |-- /auth
+  |-- /demo
+  |-- /training
+  `-- /admin
+          |
+          v
+SQLAlchemy + SQLite (development default)
+```
+
+Security controls include HttpOnly session cookies, CSRF protection for authenticated writes, Argon2 password hashing, JWT issuer/audience validation, configurable RS256 signing, security headers, constrained payloads, and role-based admin routes.
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.11+
+- Node.js 20+
+- npm 10+
+
+### 1. Start the API
+
 ```bash
-cd backend
+git clone https://github.com/msabenda/reviewer.git
+cd reviewer/backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
 
-Default API base URL:
-- `http://localhost:8000/api/v1`
+The development database is created automatically at `backend/reviewer.db` and is ignored by Git.
 
-Optional environment variables (create `backend/.env`):
-- `SECRET_KEY=` long random value (required outside `development`; used for HS512 JWT signing in dev when RSA keys are absent)
-- `DATABASE_URL=sqlite:///./reviewer.db`
-- `ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173`
-- `JWT_RSA_PRIVATE_KEY_PATH=` and `JWT_RSA_PUBLIC_KEY_PATH=` paths to PEM files (**required outside `development`**) for **RS256** access tokens (asymmetric signing; OWASP-friendly key handling)
-- `JWT_ISSUER=reviewer-api` and `JWT_AUDIENCE=reviewer-clients` (defaults match code; tokens include `iss` / `aud` / `iat` / `typ`)
+### 2. Start the web app
 
-Generate RSA keys (example):
+In another terminal:
+
 ```bash
-openssl genrsa -out jwt-rsa-private.pem 2048
-openssl rsa -in jwt-rsa-private.pem -pubout -out jwt-rsa-public.pem
-```
-
-### Security model (identifiers, JWT, OWASP API 2023 alignment)
-- **UUIDs**: `users.id` and `challenge_attempts.id` are UUIDs (string in JSON). `challenges.created_by` is a UUID for admin-authored packs or `null` for platform-seeded challenges.
-- **Passwords**: Argon2 (via passlib) for new hashes; existing PBKDF2 hashes still verify and upgrade on login.
-- **JWT**: **RS256** when RSA PEM paths are configured; **HS512** + `SECRET_KEY` in development only if PEM paths are omitted. Claims include `iss`, `aud`, `iat`, `exp`, `typ`; validation enforces audience and issuer.
-- **Sessions**: HttpOnly access cookie + CSRF double-submit on mutating cookie-authenticated requests; generic errors on failed login with **constant-time** password verification path.
-- **Rate limits**: IP-based limits were removed from route decorators because SlowAPI’s wrapper conflicted with FastAPI JSON body binding (422 on login/register/submit). Re-introduce via ASGI middleware or `Depends()`-based limiters that do not wrap the route handler.
-- **Payload limits**: `SubmissionRequest` caps selected line count and line index range.
-- **SQLite upgrade**: If an older local DB used integer user IDs, startup **drops and recreates** all application tables once (data loss). Use backups or export before upgrading.
-
-OpenAPI `/docs` is **disabled** when `ENVIRONMENT` is not `development` (**API8** reduce exposure).
-
-## Run Frontend
-```bash
-cd frontend
-npm install
+cd reviewer/frontend
+npm ci
 npm run dev
 ```
 
-Frontend API target defaults to:
-- `http://localhost:8000/api/v1`
+Open <http://localhost:5173>. The frontend uses `http://localhost:8000/api/v1` by default.
 
-Override with:
-- `VITE_API_BASE_URL`
+## Configuration
 
-## API Endpoints
-### Public
-- `GET /api/v1/health`
-- `GET /api/v1/demo/meta`
-- `GET /api/v1/demo/categories`
-- `GET /api/v1/demo/filters`
-- `GET /api/v1/demo/challenges`
-- `GET /api/v1/demo/challenges/{challenge_id}`
-- `GET /api/v1/demo/challenges/{challenge_id}/stats`
-- `POST /api/v1/demo/challenges/{challenge_id}/submit`
+Create `backend/.env` when you need to override development defaults:
 
-### Auth
-- `POST /api/v1/auth/register`
-- `POST /api/v1/auth/login`
-- `GET /api/v1/auth/me`
+```dotenv
+ENVIRONMENT=development
+SECRET_KEY=replace-with-a-long-random-development-secret
+DATABASE_URL=sqlite:///./reviewer.db
+ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+JWT_ISSUER=reviewer-api
+JWT_AUDIENCE=reviewer-clients
+```
 
-### Protected (Bearer token required)
-- `GET /api/v1/training/meta`
-- `GET /api/v1/training/categories`
-- `GET /api/v1/training/filters`
-- `GET /api/v1/training/challenges`
-- `GET /api/v1/training/challenges/{challenge_id}`
-- `GET /api/v1/training/challenges/{challenge_id}/stats`
-- `POST /api/v1/training/challenges/{challenge_id}/submit`
-- `GET /api/v1/training/progress`
-- `GET /api/v1/training/squad-pulse`
-- `GET /api/v1/training/leaderboard`
+Production deployments must use a strong secret-management system and RSA signing keys:
 
-### Admin (Admin role + auth required)
-- `POST /api/v1/admin/challenges/upload`
-- `PUT /api/v1/admin/users/{user_id}/role`
+```dotenv
+JWT_RSA_PRIVATE_KEY_PATH=/run/secrets/jwt-private.pem
+JWT_RSA_PUBLIC_KEY_PATH=/run/secrets/jwt-public.pem
+```
 
-## Roadmap and integrations (GitHub, CI, depth, AI, packs)
+Never commit `.env` files, databases, private keys, access tokens, or real learner data.
 
-Product direction and integration options (GitHub Actions, Apps, OAuth, merge gates, AI guardrails, employer assessment, content pipeline) live in:
+## API Overview
 
-- **[docs/PRODUCT_ROADMAP.md](docs/PRODUCT_ROADMAP.md)**
+| Scope | Routes |
+| --- | --- |
+| Health | `GET /api/v1/health` |
+| Demo | metadata, filters, challenges, statistics, and submissions under `/api/v1/demo` |
+| Authentication | register, login, current user under `/api/v1/auth` |
+| Training | challenges, submissions, progress, squad pulse, and leaderboard under `/api/v1/training` |
+| Administration | challenge upload and role management under `/api/v1/admin` |
 
-A **sample GitHub Actions workflow** (weekly mission → optional issue post) that logs into reviewer and calls `GET /training/squad-pulse`:
+Interactive OpenAPI documentation is available at <http://localhost:8000/docs> in development and disabled outside development.
 
-- **[docs/samples/reviewer-weekly-mission.yml](docs/samples/reviewer-weekly-mission.yml)**  
-  Copy into `.github/workflows/` in a repo where you configure secrets. Prefer a dedicated bot account today; replace with machine-to-machine auth when you implement it (described in the roadmap).
+## Project Structure
 
-## Notes
-- Demo mode uses a curated subset of challenges and in-memory demo attempts.
-- Authenticated mode stores attempts in SQLite by default (attempt rows keyed by UUID).
-- Admin upload supports `challenge.json` + source files inside ZIP packs.
-- Tables are auto-created on backend startup.
-- Training routes use **session cookies** (and CSRF on mutating cookie-auth requests); CI integration today uses cookie jar login or future API keys — see roadmap.
+```text
+backend/
+  app/api/v1/       Versioned API routes
+  app/core/         Configuration, database, auth, and schema migration
+  app/middleware/   Request logging and security headers
+  app/models/       SQLAlchemy models
+  app/services/     Authentication and challenge logic
+  app/data.py       Built-in educational challenge catalogue
+frontend/
+  src/components/   Reusable training interface components
+  src/context/      Authentication state
+  src/pages/        Demo, learning, progress, leaderboard, and admin pages
+  src/services/     API client
+docs/
+  screenshots/      Product screenshots
+  PRODUCT_ROADMAP.md
+scripts/            Training-content generation utilities
+```
+
+## Validation
+
+```bash
+# Backend tests
+python -m pip install -r backend/requirements-dev.txt
+PYTHONPATH=backend DATABASE_URL=sqlite:////tmp/reviewer-test.db pytest -q backend/tests
+
+# Frontend production build
+cd frontend
+npm ci
+npm run build
+```
+
+## Responsible Use
+
+Reviewer is designed for defensive education in controlled environments. Do not use its examples to access systems without explicit authorization. See [`SECURITY.md`](SECURITY.md) for vulnerability reporting and scope.
+
+## Contributing
+
+Bug fixes, new defensive challenges, accessibility improvements, documentation, and tests are welcome. Read [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening a pull request.
+
+## Roadmap
+
+Planned GitHub integration, challenge packs, assessment workflows, and AI-assisted review guardrails are documented in [`docs/PRODUCT_ROADMAP.md`](docs/PRODUCT_ROADMAP.md).
+
+## License
+
+Released under the [MIT License](LICENSE). Copyright © 2026 Msambili Ndaga.

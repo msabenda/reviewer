@@ -4,9 +4,6 @@ import landingFeedback from "../assets/landing-feedback.png";
 import landingTeamPreview from "../assets/landing-team-preview.png";
 import challengeImage from "../assets/challenge.png";
 import logo from "../assets/logo.png";
-import portraitMsa from "../assets/reviewers/msa.jpeg";
-import portraitAmina from "../assets/reviewers/amina.jpg";
-import portraitDavid from "../assets/reviewers/david.jpeg";
 import FeatureGrid from "../components/landing/FeatureGrid";
 import LanguageCloud from "../components/landing/LanguageCloud";
 
@@ -89,33 +86,8 @@ const TESTIMONIALS = [
   },
 ];
 
-const REVIEWERS = [
-  {
-    name: "Msambili Ndaga",
-    role: "API Security Advocate",
-    feedback:
-      "reviewer is the first training tool that feels like our real API reviews. The challenges force you to think in auth boundaries and abuse cases, not just trivia.",
-    portrait: portraitMsa,
-  },
-  {
-    name: "Amina Ally",
-    role: "Frontend Developer",
-    feedback:
-      "I use reviewer to sharpen how I read React and TypeScript PRs. The workspace feels like my editor, and the feedback loop makes insecure patterns stick.",
-    portrait: portraitAmina,
-  },
-  {
-    name: "David John",
-    role: "Backend Developer",
-    feedback:
-      "For our backend guild, reviewer turned secure review into a habit. We run short sessions on API and job flows, and engineers actually look forward to the next challenge.",
-    portrait: portraitDavid,
-  },
-];
-
 function LandingPage({ onNavigate, isAuthenticated }) {
   const [spotlight, setSpotlight] = useState({ x: 38, y: 25 });
-  const [activeReviewer, setActiveReviewer] = useState(0);
   const [activePortfolioImage, setActivePortfolioImage] = useState(0);
 
   const portfolioImages = useMemo(
@@ -147,13 +119,7 @@ function LandingPage({ onNavigate, isAuthenticated }) {
     setSpotlight({ x: Math.min(92, Math.max(8, x)), y: Math.min(85, Math.max(12, y)) });
   }
 
-  function showPreviousReviewer() {
-    setActiveReviewer((current) => (current - 1 + REVIEWERS.length) % REVIEWERS.length);
-  }
 
-  function showNextReviewer() {
-    setActiveReviewer((current) => (current + 1) % REVIEWERS.length);
-  }
 
   return (
     <div className="landing-page">
@@ -259,88 +225,6 @@ function LandingPage({ onNavigate, isAuthenticated }) {
         </div>
       </section>
 
-      <section className="landing-reviewers-section">
-        <div className="landing-section-header">
-          <p className="section-label">Feedback on reviewer</p>
-          <h2>People who use the tool share what it is like</h2>
-          <p className="landing-reviewers-lead">
-            Developers and security advocates below are real voices describing how reviewer fits into
-            day-to-day review practice. Swipe to read each perspective with their photo.
-          </p>
-        </div>
-        <div
-          className="reviewer-swiper"
-          aria-roledescription="carousel"
-          aria-label="Feedback from people who use reviewer"
-        >
-          <button
-            type="button"
-            className="reviewer-nav-button"
-            onClick={showPreviousReviewer}
-            aria-label="Previous reviewer"
-          >
-            ‹
-          </button>
-          <div className="reviewer-swiper-viewport">
-            <div
-              className="reviewer-swiper-track"
-              style={{
-                width: `${REVIEWERS.length * 100}%`,
-                transform: `translateX(-${(activeReviewer * 100) / REVIEWERS.length}%)`,
-              }}
-            >
-              {REVIEWERS.map((reviewer, index) => (
-                <article
-                  key={reviewer.name}
-                  className={index === activeReviewer ? "reviewer-slide is-active" : "reviewer-slide"}
-                  aria-hidden={index !== activeReviewer}
-                  style={{ flex: `0 0 calc(100% / ${REVIEWERS.length})` }}
-                >
-                  <div className="reviewer-slide-visual">
-                    <div className="reviewer-slide-photo-ring">
-                      <img
-                        src={reviewer.portrait}
-                        alt={`Portrait of ${reviewer.name}`}
-                        className="reviewer-slide-photo"
-                      />
-                    </div>
-                    <div className="reviewer-slide-glow" aria-hidden="true" />
-                  </div>
-                  <div className="reviewer-slide-body">
-                    <h3>{reviewer.name}</h3>
-                    <p className="reviewer-slide-role">{reviewer.role}</p>
-                    <blockquote className="reviewer-slide-feedback">
-                      <p>{reviewer.feedback}</p>
-                    </blockquote>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-          <button
-            type="button"
-            className="reviewer-nav-button"
-            onClick={showNextReviewer}
-            aria-label="Next reviewer"
-          >
-            ›
-          </button>
-        </div>
-        <div className="landing-reviewer-dots" role="tablist" aria-label="Choose reviewer">
-          {REVIEWERS.map((reviewer, index) => (
-            <button
-              key={reviewer.name}
-              type="button"
-              role="tab"
-              aria-selected={index === activeReviewer}
-              className={index === activeReviewer ? "reviewer-dot-button active" : "reviewer-dot-button"}
-              onClick={() => setActiveReviewer(index)}
-            >
-              <span className="sr-only">{reviewer.name}</span>
-            </button>
-          ))}
-        </div>
-      </section>
 
       <FeatureGrid items={FEATURES} />
       <LanguageCloud languages={LANGUAGES} />
